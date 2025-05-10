@@ -1,0 +1,63 @@
+@startuml
+
+!include <C4/C4_Container>
+title Open Deposit Container Diagram
+top to bottom direction
+
+Person(User, "Клиент", "Запрос на открытие депозита")
+System_Boundary(Bank, "Банк Стандарт") {
+
+   Container(API, "API Gateway", "Kong")
+   Container(SMS, "СМС-шлюз телеком-оператора")
+
+   Container_Boundary(Call, "Система кол-центр") {
+        Container(Call_UI, "Web", "Java Spring Boot", "Работа с запросами на открытие депозита с сайта")
+        ContainerDb(Call_DB, "DB", "PostgreSQL", "Хранение данных")
+    }
+
+   Container_Boundary(ABS, "Автоматизированная Банковская система") {
+        Container(ABS_UI, "АБС", "Delphi", "Работа со списком и ставками на депозит, а также с заявками на открытие")
+        ContainerDb(ABS_DB, "DB", "Oracle", "Хранение данных")
+    }
+
+    Container_Boundary(Site, "Сайт") {
+        Container(Site_UI, "Web", "PHP/React.js", "Просмотр списка депозитов, ставок и запрос на открытие депозита")
+        ContainerDb(Site_DB, "DB", "PostgreSQL", "Хранение данных")
+    }
+
+    Container_Boundary(Internet, "Интернет-банк") {
+        Container(Inernet_UI, "Web", "ASP.NET", "Просмотр персональных предложений по депозитам. Запрос на открытие депозита")
+        ContainerDb(Inernet_DB, "DB", "MS SQL", "Хранение данных")
+    }
+
+    Container_Boundary(Deposit, "Сервис депозитов") {
+        Container(DepService, "service", "Messaging Service", "Сервис обработки запросов открытия депозита")
+        Container(Kafka, "Kafka", "Messaging Service", "Система обмена сообщениями")
+    }
+}
+
+System_Ext(Telecom, "Телеком-оператор", "Отправка CMC уведомлений")
+
+Rel(User, Site_UI, "Запрос на открытие депозита")
+Rel(User, Inernet_UI, "Запрос на открытие депозита")
+Rel(Site_UI, API, "Запрос")
+Rel(Inernet_UI, API, "Заявка")
+Rel(API, DepService, "Запрос/Заявка")
+Rel(DepService, Kafka, "json")
+Rel(Internet, SMS, "Код запроса")
+Rel(ABS, SMS, "Подтверждение депозита")
+Rel(ABS, DepService, "Списки и ставки на депозит")
+Rel(Deposit, Site, "Списки и ставки на депозит")
+Rel(Deposit, Internet, "Списки и ставки на депозит")
+Rel(SMS, Telecom, "rest/https")
+Rel(Kafka, ABS, "Заявка на открытие депозита")
+Rel(Kafka, Call, "Запрос с сайта")
+Rel(Call, API, "Заявка")
+Rel(Telecom, User, "СМС уведомление ")
+
+Rel(Call_UI, Call_DB, "")
+Rel(ABS_UI, ABS_DB, "")
+Rel(Site_UI, Site_DB, "")
+Rel(Inernet_UI, Inernet_DB, "")
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+
+!include <C4/C4_Container>
+title Call Center Container Diagram
+top to bottom direction
+
+Person(User, "Клиент", "Звонок в кол-центр по вопросам депозита")
+System_Boundary(Bank, "Банк Стандарт") {
+
+   Container(SFTP, "SFTP сервер", "json")
+   
+   Container_Boundary(Call, "Система кол-центр") {
+        Container(Call_UI, "Web", "Java Spring Boot", "Работа с запросами на открытие депозита с сайта")
+        ContainerDb(Call_DB, "DB", "PostgreSQL", "Хранение данных")
+    }
+
+    Container_Boundary(Deposit, "Сервис депозитов") {
+        Container(DepService, "service", "Messaging Service", "Сервис обработки запросов открытия депозита")
+        Container(Kafka, "Kafka", "Messaging Service", "Система обмена сообщениями")
+    }
+    
+   Container_Boundary(ABS, "Автоматизированная Банковская система") {
+        Container(ABS_UI, "АБС", "Delphi", "Работа со списком и ставками на депозит, а также с заявками на открытие")
+        ContainerDb(ABS_DB, "DB", "Oracle", "Хранение данных")
+    }
+}
+
+System_Ext(CallCenterEx, "Система партнерского кол-центра")
+System_Ext(Calls, "Распределение звонка клиента")
+
+Rel(User, Calls, "Клиент звонит в банк по вопросам депозита")
+Rel(Calls, Call, "Прием звонка сотрудником кол-центра")
+Rel(Calls, CallCenterEx, "Прием звонка партнерского сотрудником кол-центра")
+Rel(ABS, DepService, "Отправка списка и ставки на депозит")
+Rel(Deposit, Call, "Отправка списка и ставки на депозит")
+Rel(DepService, Kafka, "json")
+Rel(Deposit, SFTP, "Отправка файла со списками и ставками на депозит")
+Rel(SFTP, CallCenterEx, "Отправка файла со списками и ставками на депозит", "json")
+Rel(CallCenterEx, SFTP, "Отправка заявки", "json")
+Rel(Call, DepService, "Отправка заявки", "json")
+Rel(SFTP, DepService, "Отправка заявки", "json")
+
+Rel(Call_UI, Call_DB, "")
+Rel(ABS_UI, ABS_DB, "")
+
+@enduml
