@@ -1,0 +1,26 @@
+@startuml
+
+!include <C4/C4_Context>
+title Open Deposit Context Diagram
+top to bottom direction
+
+Person(User, "Клиент", "Подача заявки на депозит")
+System_Boundary(Bank, "Банк Стандарт") {
+  System(Site, "Сайт", "Список и ставки на депозит. Подача заявки", "php, react")
+  System(Internet, "Интернет-банк", "Персональные ставки на депозит. Личный кабинет. Подача заявки", "asp.net")
+  System(CallCenter, "Система кол-центра", "Работа с заявками на депозит", "java, ms sql")
+  System(ABS, "АБС", "Автоматизированная банковская система", "delphi, oracle")
+}
+
+System_Ext(Telecom, "Телеком-оператор", "Отправка CMC сообщений")
+
+Rel(User, Site, "Подача запроса", "http")
+Rel(User, Internet, "Подача и просмотр запроса", "http")
+Rel(Site, CallCenter, "Отправка запроса", "json")
+Rel(CallCenter, ABS, "Отправка заявки", "json")
+Rel(Internet, ABS, "Отправка заявки", "json")
+Rel(Internet, Telecom, "Отправка СМС с кодом")
+Rel(ABS, Telecom, "Отправка СМС с подтверждением")
+Rel(Telecom, User, "Отправка СМС сообщения")
+
+@enduml

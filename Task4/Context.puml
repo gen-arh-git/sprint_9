@@ -1,0 +1,29 @@
+@startuml
+
+!include <C4/C4_Context>
+title CallCenter Context Diagram
+top to bottom direction
+
+Person(User, "Клиент", "Звонок в кол-центр по вопросам депозита")
+System_Boundary(Bank, "Банк Стандарт") {
+System(ABS, "АБС", "Автоматизированная банковская система", "delphi, oracle")
+System(Deposit, "Сервис депозитов", "Получение списка и ставок на депозит и передача заявок", "react.js, postgresql")
+System(CallCenter, "Система кол-центра", "Работа с заявками на депозит", "java, ms sql")
+System(SFTP, "SFTP сервер", "Передача и прием файлов через SFTP", "sftp")
+}
+
+System_Ext(CallCenterEx, "Система партнерского кол-центра", "Работа с заявками на депозит")
+System_Ext(Call, "Распределение звонка клиента", "", "")
+
+Rel(User, Call, "Клиент звонит в банк по вопросам депозита", "")
+Rel(Call, CallCenter, "Прием звонка сотрудником кол-центра", "")
+Rel(Call, CallCenterEx, "Прием звонка партнерского сотрудником кол-центра", "")
+Rel(ABS, Deposit, "Отправка списка и ставки на депозит", "json")
+Rel(Deposit, CallCenter, "Отправка списка и ставки на депозит", "json")
+Rel(Deposit, SFTP, "Отправка файла со списками и ставками на депозит", "json")
+Rel(SFTP, CallCenterEx, "Отправка файла со списками и ставками на депозит", "json")
+Rel(CallCenterEx, SFTP, "Отправка заявки", "json")
+Rel(CallCenter, Deposit, "Отправка заявки", "json")
+Rel(SFTP, Deposit, "Отправка заявки", "json")
+
+@enduml.
